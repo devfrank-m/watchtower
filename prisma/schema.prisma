@@ -86,8 +86,28 @@ model Monitor {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  runs  MonitorRun[]
 
   @@index([enabled, nextRunAt])
   @@map("monitors")
+}
+
+
+model MonitorRun {
+  id          BigInt    @id @default(autoincrement())
+  monitorId  BigInt
+
+  // time-series column (hypertable time key)
+  runAt       DateTime  @default(now())
+
+  // execution result
+  status      Int
+  latencyMs   Int?
+  error       String?
+
+  monitor Monitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  @@index([monitorId, runAt(sort: Desc)])
+  @@map("monitor_runs")
 }

@@ -6,6 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { X, Save } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Monitor, MonitorFormData } from "@/types";
 
 interface MonitorFormProps {
@@ -73,23 +80,25 @@ export function MonitorForm({ onClose, onSave, monitor }: MonitorFormProps) {
               <Label htmlFor="type" className="text-sm font-semibold">
                 Type
               </Label>
-              <select
-                id="type"
+              <Select
                 value={formData.type}
-                onChange={(e) =>
-                  setFormData({ ...formData, type: e.target.value })
+                onValueChange={(value) =>
+                  setFormData({ ...formData, type: value })
                 }
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                required
               >
-                <option value="http">HTTP / HTTPS</option>
-                <option value="tcp" disabled>
-                  TCP (Coming Soon)
-                </option>
-                <option value="ping" disabled>
-                  Ping (Coming Soon)
-                </option>
-              </select>
+                <SelectTrigger id="type" className="w-full">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="http">HTTP / HTTPS</SelectItem>
+                  <SelectItem value="tcp" disabled>
+                    TCP (Coming Soon)
+                  </SelectItem>
+                  <SelectItem value="ping" disabled>
+                    Ping (Coming Soon)
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -115,21 +124,24 @@ export function MonitorForm({ onClose, onSave, monitor }: MonitorFormProps) {
               <Label htmlFor="method" className="text-sm font-semibold">
                 HTTP Method
               </Label>
-              <select
-                id="method"
+              <Select
                 value={formData.method}
-                onChange={(e) =>
-                  setFormData({ ...formData, method: e.target.value })
+                onValueChange={(value) =>
+                  setFormData({ ...formData, method: value })
                 }
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <option value="GET">GET</option>
-                <option value="POST">POST</option>
-                <option value="HEAD">HEAD</option>
-                <option value="PUT">PUT</option>
-                <option value="PATCH">PATCH</option>
-                <option value="DELETE">DELETE</option>
-              </select>
+                <SelectTrigger id="method" className="w-full">
+                  <SelectValue placeholder="Select method" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="GET">GET</SelectItem>
+                  <SelectItem value="POST">POST</SelectItem>
+                  <SelectItem value="HEAD">HEAD</SelectItem>
+                  <SelectItem value="PUT">PUT</SelectItem>
+                  <SelectItem value="PATCH">PATCH</SelectItem>
+                  <SelectItem value="DELETE">DELETE</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
