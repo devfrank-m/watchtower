@@ -101,13 +101,14 @@ export function useApiCall<T>() {
 export function useOptimisticUpdate<T extends { id: string }>(
   initialData: T[]
 ) {
-  const prevDataRef = useRef<T[]>(initialData);
+  const prevDataRef = useRef<string>(JSON.stringify(initialData));
   const [data, setData] = useState<T[]>(initialData);
 
   useEffect(() => {
-    if (prevDataRef.current !== initialData) {
+    const currentDataStr = JSON.stringify(initialData);
+    if (prevDataRef.current !== currentDataStr) {
       setData(initialData);
-      prevDataRef.current = initialData;
+      prevDataRef.current = currentDataStr;
     }
   }, [initialData]);
 

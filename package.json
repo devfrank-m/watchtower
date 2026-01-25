@@ -11,7 +11,9 @@
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "db:generate": "prisma generate"
+    "db:generate": "prisma generate",
+    "runner": "cd runners && ./runners",
+    "runner:build": "cd runners && go build -o runners"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
