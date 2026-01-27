@@ -22,6 +22,11 @@ func main() {
 	defer database.Close()
 
 	ctx := context.Background()
+
+	if err := database.SetupTimescale(ctx); err != nil {
+		log.Fatalf("timescale setup: %v", err)
+	}
+
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
