@@ -7,6 +7,7 @@ import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Monitor, MonitorRun } from "@/types";
 import { MonitorChart } from "./monitor-chart";
+import { RefreshHeader } from "@/components/refresh-header";
 
 interface MonitorCardProps {
   monitor: Monitor;
@@ -137,12 +138,15 @@ export function MonitorCard({ monitor, onEdit, onDelete, onToggle }: MonitorCard
       </div>
       {expanded && (
         <div className="mt-6 pt-6 border-t">
-          {loading ? (
+          <RefreshHeader title="Recent Activity" loading={loading} onRefresh={fetchRuns} />
+          {loading && !runs ? (
             <div className="h-[120px] flex items-center justify-center text-sm text-muted-foreground">
               Loading...
             </div>
           ) : (
-            <MonitorChart runs={runs || []} />
+            <div className={loading ? "opacity-50 pointer-events-none" : ""}>
+              <MonitorChart runs={runs || []} />
+            </div>
           )}
         </div>
       )}
