@@ -22,6 +22,11 @@ func main() {
 	defer database.Close()
 
 	ctx := context.Background()
+
+	if err := database.SetupTimescale(ctx); err != nil {
+		log.Fatalf("timescale setup: %v", err)
+	}
+
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
@@ -46,14 +51,17 @@ func processMonitors(ctx context.Context, database *db.DB) error {
 
 	log.Printf("Processing %d monitors", len(monitors))
 
-	var runs []db.MonitorRun
-	var updates []struct {
-		id       int64
-		nextRun  time.Time
-		interval int
+	// Update nextRunAt first to prevent monitors getting stuck if checks fail
+	for _, m := range monitors {
+		nextRun := time.Now().Add(time.Duration(m.IntervalSec) * time.Second)
+		if err := database.UpdateNextRun(ctx, m.ID, nextRun); err != nil {
+			log.Printf("update nextRun for monitor %d: %v", m.ID, err)
+		}
 	}
 
+	var runs []db.MonitorRun
 	for _, m := range monitors {
+		log.Printf("Performing check for monitor to %s", m.Target)
 		result := check.Perform(ctx, check.Config{
 			Method:    getMethod(m.Method),
 			URL:       m.Target,
@@ -71,29 +79,12 @@ func processMonitors(ctx context.Context, database *db.DB) error {
 			LatencyMs: &result.LatencyMs,
 			Error:     getErrorPtr(result.Error),
 		})
-
-		updates = append(updates, struct {
-			id       int64
-			nextRun  time.Time
-			interval int
-		}{
-			id:       m.ID,
-			nextRun:  time.Now().Add(time.Duration(m.IntervalSec) * time.Second),
-			interval: m.IntervalSec,
-		})
 	}
 
-	log.Printf("Saving %d runs", len(runs))
-
-	if err := database.SaveRuns(ctx, runs); err != nil {
-		return err
-	}
-
-	log.Printf("Updating %d monitors", len(updates))
-	
-	for _, u := range updates {
-		if err := database.UpdateNextRun(ctx, u.id, u.nextRun); err != nil {
-			log.Printf("update monitor %d: %v", u.id, err)
+	if len(runs) > 0 {
+		log.Printf("Saving %d runs", len(runs))
+		if err := database.SaveRuns(ctx, runs); err != nil {
+			return err
 		}
 	}
 

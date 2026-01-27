@@ -23,6 +23,15 @@ export interface MonitorFormData {
   expectedStatus?: number;
 }
 
+export interface MonitorRun {
+  id: string;
+  monitorId: string;
+  runAt: string;
+  status: number;
+  latencyMs: number | null;
+  error: string | null;
+}
+
 export interface User {
   id: number;
   name: string;
