@@ -32,6 +32,23 @@ export interface MonitorRun {
   error: string | null;
 }
 
+export interface MonitorDailyStats {
+  day: string;
+  totalChecks: number;
+  successCount: number;
+  failureCount: number;
+  avgLatencyMs: number | null;
+}
+
+export interface MonitorStats {
+  dailyStats: MonitorDailyStats[];
+  percentiles: {
+    p50: number | null;
+    p95: number | null;
+    p99: number | null;
+  };
+}
+
 export interface User {
   id: number;
   name: string;

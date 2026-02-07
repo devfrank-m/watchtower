@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Globe, Clock, Edit2, Trash2, XCircle, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
-import { Monitor, MonitorRun } from "@/types";
+import { Monitor, MonitorRun, MonitorStats } from "@/types";
 import { MonitorChart } from "./monitor-chart";
 import { RefreshHeader } from "@/components/refresh-header";
 
@@ -19,15 +19,18 @@ interface MonitorCardProps {
 export function MonitorCard({ monitor, onEdit, onDelete, onToggle }: MonitorCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [runs, setRuns] = useState<MonitorRun[] | null>(null);
+  const [stats, setStats] = useState<MonitorStats | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const fetchRuns = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/monitors/${monitor.id}/runs?limit=100`);
-      if (res.ok) {
-        setRuns(await res.json());
-      }
+      const [runsRes, statsRes] = await Promise.all([
+        fetch(`/api/monitors/${monitor.id}/runs?limit=10`),
+        fetch(`/api/monitors/${monitor.id}/stats`),
+      ]);
+      if (runsRes.ok) setRuns(await runsRes.json());
+      if (statsRes.ok) setStats(await statsRes.json());
     } finally {
       setLoading(false);
     }
@@ -35,9 +38,9 @@ export function MonitorCard({ monitor, onEdit, onDelete, onToggle }: MonitorCard
 
   useEffect(() => {
     if (expanded && !runs) {
-      fetchRuns();
+      fetchData();
     }
-  }, [expanded, runs, fetchRuns]);
+  }, [expanded, runs, fetchData]);
 
   return (
     <Card className="p-6 transition-all hover:border-primary/50 group">
@@ -138,14 +141,14 @@ export function MonitorCard({ monitor, onEdit, onDelete, onToggle }: MonitorCard
       </div>
       {expanded && (
         <div className="mt-6 pt-6 border-t">
-          <RefreshHeader title="Recent Activity" loading={loading} onRefresh={fetchRuns} />
+          <RefreshHeader title="Recent Activity" loading={loading} onRefresh={fetchData} />
           {loading && !runs ? (
             <div className="h-[120px] flex items-center justify-center text-sm text-muted-foreground">
               Loading...
             </div>
           ) : (
             <div className={loading ? "opacity-50 pointer-events-none" : ""}>
-              <MonitorChart runs={runs || []} />
+              <MonitorChart runs={runs || []} stats={stats} />
             </div>
           )}
         </div>
