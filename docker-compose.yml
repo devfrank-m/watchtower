@@ -5,11 +5,57 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_DB=watchtower
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=${DB_NAME:-watchtower}
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-password}
     volumes:
       - tsdb_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-watchtower}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: watchtower-app
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-password}@timescaledb:5432/${DB_NAME:-watchtower}
+      - DB_HOST=timescaledb
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+      - DB_NAME=${DB_NAME:-watchtower}
+      - AUTH_SECRET=${AUTH_SECRET:-your-secret-key-change-this-in-production}
+      - AUTH_URL=${AUTH_URL:-http://localhost:3000}
+      - ROOT_EMAIL=${ROOT_EMAIL:-admin@watchtower.local}
+      - ROOT_PASSWORD=${ROOT_PASSWORD:-change-this-secure-password}
+      - ROOT_NAME=${ROOT_NAME:-Administrator}
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+    restart: always
+
+  runner:
+    build:
+      context: ./runners
+      dockerfile: Dockerfile
+    container_name: watchtower-runner
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-password}@timescaledb:5432/${DB_NAME:-watchtower}
+      - DB_HOST=timescaledb
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+      - DB_NAME=${DB_NAME:-watchtower}
+    depends_on:
+      timescaledb:
+        condition: service_healthy
     restart: always
 
 volumes:

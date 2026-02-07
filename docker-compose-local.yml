@@ -1,0 +1,16 @@
+services:
+  timescaledb:
+    image: docker.io/timescale/timescaledb:latest-pg16
+    container_name: watchtower-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=watchtower
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - tsdb_data:/var/lib/postgresql/data
+    restart: always
+
+volumes:
+  tsdb_data:
